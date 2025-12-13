@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiAppProducts.MainPage" BackgroundColor="LightSalmon">
+
+
+        <ScrollView HorizontalOptions="Center">
+
+            <StackLayout Grid.Row="0" HorizontalOptions="Center" VerticalOptions="Start" >
+                <Label Text="Категории" FontSize="30" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" Margin="0, 30"/>
+
+            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="15" Margin="0,20,0,0">
+                <Button Text="Добавить" Clicked="AddCategory_click" BackgroundColor="LightCoral" TextColor="White"  HeightRequest="50" CornerRadius="10" Grid.Column="0"/>
+                <Button Text="Редакт." Clicked="EditCategory_click" BackgroundColor="LightCoral" TextColor="White" HeightRequest="50" CornerRadius="10" Grid.Column="1"/>
+                <Button Text="Удалить" Clicked="DeleteCategory_click" BackgroundColor="LightCoral" TextColor="White" HeightRequest="50" CornerRadius="10" Grid.Column="2"/>
+                <Button Text="Продукты" Clicked="ToProduct_click" BackgroundColor="LightCoral" TextColor="White" HeightRequest="50" CornerRadius="10" Grid.Column="3"/>
+                
+            </Grid>
+            <ListView x:Name="ListViewCategory"  ItemsSource="{Binding Category}" Grid.Row="2" HasUnevenRows="True" SelectionMode="Single" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"  BackgroundColor="Transparent">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            
+                            <Border Margin="10,5" BackgroundColor="White">
+                              
+                                
+                                <Grid ColumnDefinitions="Auto,*,Auto" Padding="15" >
+                                    <StackLayout Grid.Column="1" Margin="10,0" Spacing="5">
+                                        
+                                        <Label Text="{Binding CategoryName}" FontSize="15" FontAttributes="Bold" TextColor="Black"></Label>
+                                        <Label Text="{Binding CategoryDescription} " FontSize="15" TextColor="Black"></Label>
+                                       
+                                    </StackLayout>
+                                </Grid>
+                            </Border>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+            </ListView>
+
+
+
+        </StackLayout>
+        </ScrollView>
+    
+
+
+</ContentPage>
