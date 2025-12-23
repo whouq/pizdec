@@ -1,8 +1,5 @@
 ﻿
 
-
-
-
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -11,18 +8,18 @@ namespace MauiAppProducts;
 public partial class ProductList : ContentPage
 
 {
-    private readonly DBService dBService;
+    private DBService? dBService; 
     public Category SelectedCategory { get; }
     public ObservableCollection<Product> Products { get; } = new();
     public Product? SelectedProduct { get; set; }
 
 
-  
+
 
     public ProductList(DBService dBService, Category selectedCategory)
 	{
 		InitializeComponent();
-        this.dBService = dBService;
+       
         SelectedCategory = selectedCategory;
         BindingContext = this;
         LoadList();
@@ -32,46 +29,31 @@ public partial class ProductList : ContentPage
     protected async override void OnAppearing()
     {
         base.OnAppearing();
-        LoadProducts();
+        await LoadList();
     }
-    public async Task LoadProducts()
+    
+    
+    public async Task LoadList()
     {
         try
         {
+            dBService = await DBService.GetDB();
             Products.Clear();
 
-            var categoryId = SelectedCategory?.Id ?? 0;
-            Console.WriteLine($"[DEBUG] Загружаем продукты для CategoryId = {categoryId}");
+            var products = await dBService.GetProductsByCategoryAsync(SelectedCategory.Id);
 
-            var products = await dBService.GetProductsByCategoryAsync(categoryId);
-
-            Console.WriteLine($"[DEBUG] Найдено {products.Count} продуктов");
-
-            foreach (var p in products)
+            foreach (var product in products)
             {
-                Console.WriteLine($"  - '{p.Name}' (CategoryId: {p.CategoryId}, Id: {p.Id})");
-                Products.Add(p);
+                Products.Add(product);
             }
 
-            Title = $"Продукты: {SelectedCategory?.CategoryName ?? "Неизвестно"}";
+            ListViewProduct.ItemsSource = Products;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Ошибка загрузки: {ex}");
-            await DisplayAlert("Ошибка", ex.Message, "OK");
+            Console.WriteLine($"Ошибка загрузки продуктов: {ex.Message}");
+
         }
-    }
-    
-    public async void LoadList()
-    {
-        ListViewProduct.ItemsSource = await dBService.GetAllProductsAsync();
-        Products.Clear();
-
-        // Получаем ТОЛЬКО продукты текущей категории
-        var products = await dBService.GetProductsByCategoryAsync(SelectedCategory.Id);
-
-        foreach (var p in products)
-            Products.Add(p);
     }
 
     
@@ -84,9 +66,11 @@ public partial class ProductList : ContentPage
 
     private async void EditProduct_click(object sender, EventArgs e)
     {
-        await dBService.UpdateProductAsync(DeleteId, ProductHere);
-        await Navigation.PushAsync(new AddProduct(dBService, SelectedCategory));
-        LoadList();
+        if (SelectedProduct == null) return;
+
+     
+        await Navigation.PushAsync(new AddProduct(dBService, SelectedCategory, SelectedProduct));
+        await LoadList(); 
     }
 
 
@@ -95,25 +79,26 @@ public partial class ProductList : ContentPage
     private async void DeleteProduct_click(object sender, EventArgs e)
     {
         if (SelectedProduct == null) return;
+
         try
         {
-         await dBService.DeleteProductAsync(SelectedProduct.Id);
-         LoadList();
-
+            await dBService.DeleteProductAsync(SelectedProduct.Id);
+            await LoadList(); 
         }
-        catch 
+        catch
         {
             return;
         }
-        
-        
+
+
 
     }
 
     private async void AddProduct_click(object sender, EventArgs e)
     {
-     
+
         await Navigation.PushAsync(new AddProduct(dBService, SelectedCategory));
+        await LoadList(); 
     }
 
 

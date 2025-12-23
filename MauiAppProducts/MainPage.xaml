@@ -27,8 +27,8 @@
                                 <Grid ColumnDefinitions="Auto,*,Auto" Padding="15" >
                                     <StackLayout Grid.Column="1" Margin="10,0" Spacing="5">
                                         
-                                        <Label Text="{Binding CategoryName}" FontSize="15" FontAttributes="Bold" TextColor="Black"></Label>
-                                        <Label Text="{Binding CategoryDescription} " FontSize="15" TextColor="Black"></Label>
+                                        <Label x:Name="NameEntry" Text="{Binding CategoryName}" FontSize="15" FontAttributes="Bold" TextColor="Black"></Label>
+                                        <Label x:Name="DescriptionEntry" Text="{Binding CategoryDescription} " FontSize="15" TextColor="Black"></Label>
                                        
                                     </StackLayout>
                                 </Grid>

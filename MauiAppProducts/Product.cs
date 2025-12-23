@@ -15,7 +15,6 @@ namespace MauiAppProducts
         public int CategoryId { get; set; }
 
         public decimal Price { get; set; }
-        [JsonIgnore] // ← Не сериализовать, чтобы избежать циклов
-        public Category? Category { get; set; }
+    
     }
 }

@@ -1,41 +1,29 @@
 ﻿
+
 using MauiAppProducts;
 using System.Text.Json;
 
 
 public class DBService
 {
-
-    private readonly string _categoriesFile;
-    private readonly string _productsFile;
-
+    private static DBService _instance;
     public List<Category> _categories = new();
     public List<Product> _products = new();
 
     private int _nextProductId = 1;
     private int _nextCategoriesId = 1;
+
     private List<int> AutoIncr { get; set; } = new List<int> { 1, 1 };
     private List<Task> loadTasks = new List<Task>();
     public DBService()
     {
         InitializeData();
-        _categoriesFile = Path.Combine(FileSystem.Current.AppDataDirectory, "dbCategory.json");
-        _productsFile = Path.Combine(FileSystem.Current.AppDataDirectory, "dbProduct.json");
+
 
     }
     private async void InitializeData()
     {
-        //_categories = new List<Category>
-        //{
-        //    new Category { Id = _nextCategoriesId++, CategoryName = "Название категории", CategoryDescription = "Описание" },
-         
-        //};
-        //_products = new List<Product>
-        //{
-        //    new Product {Id = _nextProductId++, Name="Название продукта", Description="Описание продукта", CategoryId=1, Price=0,},
-         
-
-        //};
+        
         Task loadId = LoadId();
         Task loadCategory = LoadCategory();
         Task loadProduct = LoadProduct();
@@ -43,17 +31,26 @@ public class DBService
         await loadId;
         await loadCategory;
         await loadProduct;
-        //SaveId();
-        //SaveCategory();
-        //SaveProduct();
+       
 
+    }
+    public static async Task<DBService> GetDB()
+    {
+        if (_instance == null)
+        {
+            _instance = new DBService();
+            await _instance.InitializeAsync(); 
+        }
+        return _instance;
+    }
+    private async Task InitializeAsync()
+    {
+        await Task.Delay(500); 
     }
     public async Task<List<Category>> GetAllCategoriesAsync()
     {
         await Task.Delay(500);
-        if (!File.Exists(_categoriesFile)) return new List<Category>();
-        var json = await File.ReadAllTextAsync(_categoriesFile);
-        return JsonSerializer.Deserialize<List<Category>>(json) ?? new List<Category>();
+        return _categories.ToList();
     }
     public async void SaveCategory()
     {
@@ -94,44 +91,26 @@ public class DBService
 
     public async Task AddCategoryAsync(Category category)
     {
-        var all = await GetAllCategoriesAsync();
-
-        // Генерируем новый Id
-        category.Id = all.Count > 0 ? all.Max(c => c.Id) + 1 : 1;
-
-        all.Add(category);
-
-        var json = JsonSerializer.Serialize(all, new JsonSerializerOptions { WriteIndented = true });
-        await File.WriteAllTextAsync(_categoriesFile, json);
+        await Task.Delay(500);
+        category.Id = _categories.Count > 0 ? _categories.Max(c => c.Id) + 1 : 1;
+        _categories.Add(category);
     }
-    public async Task UpdateCategoryAsync(int newcategoryid, Category categoryupd)
+    public async Task UpdateCategoryAsync(int categoryId, Category updated)
     {
         await Task.Delay(500);
-        foreach (Category category1 in _categories)
+        var cat = _categories.FirstOrDefault(c => c.Id == categoryId);
+        if (cat != null)
         {
-            if (category1.Id==newcategoryid)
-            {
-                category1.CategoryName = categoryupd.CategoryName;
-                category1.CategoryDescription = categoryupd.CategoryDescription;
-                SaveCategory();
-                break;
-            }
+            cat.CategoryName = updated.CategoryName;
+            cat.CategoryDescription = updated.CategoryDescription;
         }
-        
+
     }
-    public async Task DeleteCategoryAsync(int id)
+    public async Task DeleteCategoryAsync(int categoryId)
     {
         await Task.Delay(500);
-        Category categorydel = new Category();
-        foreach (Category category in _categories)
-        {
-            if (category.Id==id)
-            {
-                categorydel = category;
-            }
-        }
-        _categories.Remove(categorydel);
-        SaveCategory();
+        _categories.RemoveAll(c => c.Id == categoryId);
+        _products.RemoveAll(p => p.CategoryId == categoryId);
     }
 
 
@@ -141,102 +120,49 @@ public class DBService
 
     public async Task<List<Product>> GetAllProductsAsync()
     {
-        if (!File.Exists(_productsFile)) return new List<Product>();
-        var json = await File.ReadAllTextAsync(_productsFile);
-        return JsonSerializer.Deserialize<List<Product>>(json) ?? new List<Product>();
+        await Task.Delay(500);
+        return _products.ToList();
 
     }
     public async Task AddProductAsync(Product product)
     {
         await Task.Delay(500);
-        var all = await GetAllProductsAsync();
-
-        // Генерируем ID
-        product.Id = all.Count > 0 ? all.Max(p => p.Id) + 1 : 1;
-
-        all.Add(product);
-
-        // 🔑 СОХРАНЯЕМ В ФАЙЛ!
-        var json = JsonSerializer.Serialize(all, new JsonSerializerOptions { WriteIndented = true });
-        await File.WriteAllTextAsync(_productsFile, json);
+        product.Id = _products.Count > 0 ? _products.Max(p => p.Id) + 1 : 1;
+        _products.Add(product);
     }
-    private async Task<List<Product>> GetAllProductsInternalAsync()
-    {
-        string filepath = Path.Combine(FileSystem.Current.AppDataDirectory, "dbProduct.json");
-
-        if (!File.Exists(filepath))
-            return new List<Product>();
-
-        var json = await File.ReadAllTextAsync(filepath);
-        return JsonSerializer.Deserialize<List<Product>>(json) ?? new List<Product>();
-    }
+   
     public async Task<List<Product>> GetProductsByCategoryAsync(int categoryId)
     {
-        var all = await GetAllProductsAsync();
-        string filepath = Path.Combine(FileSystem.Current.AppDataDirectory, "dbProduct.json");
-
-        if (!File.Exists(filepath))
-            return new List<Product>();
-
-        var json = await File.ReadAllTextAsync(filepath);
-        var allProducts = JsonSerializer.Deserialize<List<Product>>(json) ?? new List<Product>();
-
-        // Фильтрация по CategoryId
-        var filtered = allProducts.Where(p => p.CategoryId == categoryId).ToList();
-
-        Console.WriteLine($"[DEBUG] Найдено {filtered.Count} продуктов для CategoryId={categoryId}");
-
-        return filtered;
+        await Task.Delay(500);
+        return _products.Where(p => p.CategoryId == categoryId).ToList();
     }
 
     public async Task<bool> IsCategoryHasProductsAsync(int categoryId)
     {
-        var products = await GetProductsByCategoryAsync(categoryId);
-        return products.Any();
+        await Task.Delay(500);
+        return _products.Any(p => p.CategoryId == categoryId);
     }
 
 
-    public async Task UpdateProductAsync(int productId, Product upproduct)
+    public async Task UpdateProductAsync(int productId, Product updated)
     {
         await Task.Delay(500);
-       foreach(Product product1 in _products)
+        var prod = _products.FirstOrDefault(p => p.Id == productId);
+        if (prod != null)
         {
-            if(product1.Id == productId)
-            {
-                product1.Name = upproduct.Name;
-                product1.Description = upproduct.Description;
-                product1.Price = upproduct.Price;
-                SaveProduct();
-                break;
-            }
+            prod.Name = updated.Name;
+            prod.Description = updated.Description;
+            prod.Price = updated.Price;
+            prod.CategoryId = updated.CategoryId;
         }
-        
-        
+
+
     }
 
     public async Task DeleteProductAsync(int id)
     {
         await Task.Delay(500);
-
-        Product productdel = new Product();
-        foreach(Product product in _products)
-        {
-            if (product.Id == id)
-            {
-                productdel = product;
-            }
-            _products.Remove(productdel);
-            SaveProduct();
-        }
-    }
-
-
-
-
-    public async Task <List<Category>> GetCategoriesAsync()
-    {
-        await Task.Delay(500);
-        return _categories.ToList();
+        _products.RemoveAll(p => p.Id == id);
     }
 
 

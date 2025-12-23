@@ -9,14 +9,14 @@
             <Border BackgroundColor="White" Padding="15" >
                 <StackLayout Spacing="8">
                     <Label Text="Название категории" TextColor="Black" FontSize="18" FontAttributes="Bold"/>
-                    <Editor Text="{Binding CategoryHere.CategoryName}" Placeholder="Введите название категории" Background="White" HeightRequest="45"/>
+                    <Editor x:Name="NameEntry" Text="{Binding CategoryHere.CategoryName}" Placeholder="Введите название категории" Background="White" HeightRequest="45"/>
 
                 </StackLayout>
             </Border>
             <Border BackgroundColor="White" Padding="15" >
                 <StackLayout Spacing="8">
                     <Label Text="Описание" FontSize="14" FontAttributes="Bold" TextColor="Black"></Label>
-                    <Entry Text="{Binding CategoryHere.CategoryDescription}" Placeholder="Опишите категорию" HeightRequest="80"/>
+                    <Entry x:Name="DescriptionEntry" Text="{Binding CategoryHere.CategoryDescription}" Placeholder="Опишите категорию" HeightRequest="80"/>
                 </StackLayout>
             </Border>
             

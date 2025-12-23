@@ -29,7 +29,7 @@ namespace MauiAppProducts
  
         }
 
-      private async void LoadList()
+      private async Task LoadList()
         {
             ListViewCategory.ItemsSource = await dBService.GetAllCategoriesAsync();
 
@@ -50,9 +50,11 @@ namespace MauiAppProducts
 
         private async void EditCategory_click(object sender, EventArgs e)
         {
-           await dBService.UpdateCategoryAsync(DeleteId, CategoryHere);
+            if (SelectedCategory == null) return;
+
+
             await Navigation.PushAsync(new AddCategory(dBService));
-            LoadList();
+            await LoadList();
         }
 
 
@@ -60,7 +62,6 @@ namespace MauiAppProducts
         {
          
 
-            // 🔹 Проверка: есть ли продукты в категории?
             bool hasProducts = await dBService.IsCategoryHasProductsAsync(SelectedCategory.Id);
 
             if (hasProducts)
@@ -73,7 +74,6 @@ namespace MauiAppProducts
                 return;
             }
 
-            // Подтверждение
             bool confirm = await DisplayAlert(
                 "Подтверждение",
                 $"Удалить категорию «{SelectedCategory.CategoryName}»?",
